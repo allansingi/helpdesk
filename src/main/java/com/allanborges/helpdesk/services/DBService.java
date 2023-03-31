@@ -26,6 +26,7 @@ public class DBService {
 	private ChamadoRepository chamadoRepository;
 
 	public void instanciaDB() {
+		/*
 		Tecnico tec1 = new Tecnico(null, "Flamengo", "123456789", "flamengo@flamengo.com", "123");
 		tec1.addPerfil(Perfil.ADMIN);
 
@@ -33,9 +34,18 @@ public class DBService {
 
 		Chamado c1 = new Chamado(null, Prioridade.MEDIA, Status.ANDAMENTO, "Chamado 01", "Primeiro Chamado", tec1,
 				cli1);
+		*/
+		
+		Tecnico tec2 = new Tecnico(null, "Fluminense", "242424242", "fluminense@fluminense.com", "123");
+		tec2.addPerfil(Perfil.ADMIN);
 
-		tecnicoRepository.saveAll(Arrays.asList(tec1));
-		clienteRepository.saveAll(Arrays.asList(cli1));
-		chamadoRepository.saveAll(Arrays.asList(c1));
+		Cliente cli2 = new Cliente(null, "Botafogo", "987654321", "botafogo@botafogo.com", "123");
+
+		Chamado c2 = new Chamado(null, Prioridade.ALTA, Status.ABERTO, "Chamado 02", "Segundo Chamado", tec2,
+				cli2);
+
+		tecnicoRepository.saveAll(Arrays.asList(tec2));
+		clienteRepository.saveAll(Arrays.asList(cli2));
+		chamadoRepository.saveAll(Arrays.asList(c2));
 	}
 }
