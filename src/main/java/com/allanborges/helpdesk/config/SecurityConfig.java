@@ -3,6 +3,8 @@ package com.allanborges.helpdesk.config;
 import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Autowired;
+
+import static org.springframework.security.config.Customizer.withDefaults;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
@@ -32,7 +34,7 @@ public class SecurityConfig {
 	private JWTUtil jwtUtil;
 
 	@Autowired
-	private UserDetailsService detailsService;
+	private UserDetailsService userDetailsService;
 
 	@Bean
 	public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfiguration) throws Exception {
@@ -49,11 +51,11 @@ public class SecurityConfig {
 		http.cors();
 		http.addFilter(new JWTAuthenticationFilter(authConfiguration.getAuthenticationManager(), jwtUtil));
 		http.addFilter(
-				new JWTAuthorizationFilter(authConfiguration.getAuthenticationManager(), jwtUtil, detailsService));
+				new JWTAuthorizationFilter(authConfiguration.getAuthenticationManager(), jwtUtil, userDetailsService));
 
-		return http.csrf().disable().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-				.authorizeHttpRequests().requestMatchers(PUBLIC_MATCHERS).permitAll().anyRequest().authenticated().and()
-				.build();
+		return http.csrf(withDefaults()).disable().sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests().antMatchers(PUBLIC_MATCHERS).permitAll().anyRequest().authenticated().and()
+                .build();
 	}
 
 	@Bean
