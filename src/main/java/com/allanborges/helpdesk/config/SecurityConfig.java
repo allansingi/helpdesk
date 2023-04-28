@@ -3,13 +3,10 @@ package com.allanborges.helpdesk.config;
 import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Autowired;
-
-import static org.springframework.security.config.Customizer.withDefaults;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -17,24 +14,24 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.allanborges.helpdesk.security.JWTAuthenticationFilter;
+import com.allanborges.helpdesk.security.JWTAuthorizationFilter;
 import com.allanborges.helpdesk.security.JWTUtil;
 
-@Configuration
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
-	private static final String[] PUBLIC_MATCHERS = { "/**", "/h2/**", "/login/**" };
-
-	@Autowired
-	private Environment env;
+	private static final String[] PUBLIC_MATCHERS = {"/h2-console/**"};
 
 	@Autowired
 	private JWTUtil jwtUtil;
 
 	@Autowired
-	private UserDetailsService userDetailsService;
+	private UserDetailsService detailsService;
 
 	@Bean
 	public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfiguration) throws Exception {
@@ -45,17 +42,18 @@ public class SecurityConfig {
 	public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationConfiguration authConfiguration)
 			throws Exception {
 
-		if (Arrays.asList(env.getActiveProfiles()).contains("test")) {
-			http.headers().frameOptions().disable();
-		}
-		http.cors();
+		http.headers().frameOptions().disable();
+		
+		http.cors().and().csrf().disable();
+		
 		http.addFilter(new JWTAuthenticationFilter(authConfiguration.getAuthenticationManager(), jwtUtil));
 		http.addFilter(
-				new JWTAuthorizationFilter(authConfiguration.getAuthenticationManager(), jwtUtil, userDetailsService));
-
-		return http.csrf(withDefaults()).disable().sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests().antMatchers(PUBLIC_MATCHERS).permitAll().anyRequest().authenticated().and()
-                .build();
+				new JWTAuthorizationFilter(authConfiguration.getAuthenticationManager(), jwtUtil, detailsService));
+		
+		http.csrf().disable().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
+		.authorizeHttpRequests().antMatchers(PUBLIC_MATCHERS).permitAll().anyRequest().authenticated();
+		
+		return http.build();
 	}
 
 	@Bean

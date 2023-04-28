@@ -1,4 +1,4 @@
-package com.allanborges.helpdesk.config;
+package com.allanborges.helpdesk.security;
 
 import java.io.IOException;
 
@@ -14,8 +14,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
-import com.allanborges.helpdesk.security.JWTUtil;
-
 public class JWTAuthorizationFilter extends BasicAuthenticationFilter{
 	
 	private JWTUtil jwtUtil;
@@ -27,8 +25,6 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter{
 		super(authenticationManager);
 		this.jwtUtil = jwtUtil;
 		this.userDetailsService = userDetailsService;
-		
-		
 	}
 	
 	@Override
